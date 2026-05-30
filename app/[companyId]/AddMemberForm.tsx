@@ -38,28 +38,33 @@ export default function AddMemberForm({ companyId }: { companyId: string }) {
 
   return (
     <div className="card">
-      <h2 style={{ marginBottom: 16 }}>Add a member</h2>
+      <div className="card-header">
+        <h2>Add a member</h2>
+        <p className="muted">Assign a user to this company with a role.</p>
+      </div>
       <form onSubmit={submit} className="stack">
-        <div>
-          <label className="label">User ID</label>
-          <input
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-            placeholder="usr_..."
-            required
-          />
+        <div className="row-2">
+          <div className="field">
+            <label className="field-label">User ID</label>
+            <input
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              placeholder="usr_..."
+              required
+            />
+          </div>
+          <div className="field">
+            <label className="field-label">Role</label>
+            <select value={role} onChange={(e) => setRole(e.target.value as "admin" | "member")}>
+              <option value="member">member</option>
+              <option value="admin">admin</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label className="label">Role</label>
-          <select value={role} onChange={(e) => setRole(e.target.value as "admin" | "member")}>
-            <option value="member">member</option>
-            <option value="admin">admin</option>
-          </select>
-        </div>
-        {error && <div className="error">{error}</div>}
-        {success && <div className="success">{success}</div>}
-        <div>
-          <button type="submit" className="primary" disabled={busy || !userId}>
+        {error && <div className="field-error">{error}</div>}
+        {success && <div className="field-success">{success}</div>}
+        <div className="cluster">
+          <button type="submit" className="btn btn-primary" disabled={busy || !userId}>
             {busy ? "Adding..." : "Add member"}
           </button>
         </div>

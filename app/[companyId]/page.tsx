@@ -1,10 +1,18 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { readSessionToken } from "@/lib/session";
+import { readSessionToken, decodeClaims } from "@/lib/session";
 import { get, type CompanyDetail } from "@/lib/api";
+import { Chrome } from "@/lib/Chrome";
 import AddMemberForm from "./AddMemberForm";
 
 export const dynamic = "force-dynamic";
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
+  return (parts[0]![0]! + parts[parts.length - 1]![0]!).toUpperCase();
+}
 
 export default async function CompanyDetailPage({
   params,
@@ -13,6 +21,8 @@ export default async function CompanyDetailPage({
 }) {
   const token = readSessionToken();
   if (!token) redirect("/login");
+  const claims = decodeClaims(token);
+  if (!claims) redirect("/login");
 
   let company: CompanyDetail | null = null;
   let error: string | null = null;
@@ -24,49 +34,84 @@ export default async function CompanyDetailPage({
     error = msg;
   }
 
+  const isActive = company?.companyId === claims.companyId;
+
   return (
-    <div className="container">
-      <div className="stack" style={{ gap: 24 }}>
-        <div>
-          <Link href="/dashboard/companies" className="nav-link">← All companies</Link>
-        </div>
-
-        {error && <div className="card"><div className="error">{error}</div></div>}
-
-        {company && (
-          <>
-            <div className="between">
-              <div>
-                <div className="kicker">Company</div>
-                <h1 style={{ marginTop: 8 }}>{company.name}</h1>
-              </div>
-              <span className="pill">{company.kind}</span>
-            </div>
-
-            <div className="card">
-              <h2 style={{ marginBottom: 16 }}>Details</h2>
-              <table>
-                <tbody>
-                  <tr><th style={{ width: 200 }}>Company ID</th><td><code style={{ fontSize: 13 }}>{company.companyId}</code></td></tr>
-                  <tr><th>Slug</th><td>{company.slug || "—"}</td></tr>
-                  <tr><th>Tier</th><td>{company.tier || "—"}</td></tr>
-                  <tr><th>Owner User ID</th><td><code style={{ fontSize: 13 }}>{company.ownerUserId}</code></td></tr>
-                </tbody>
-              </table>
-            </div>
-
-            <AddMemberForm companyId={company.companyId} />
-
-            <div className="card">
-              <h2 style={{ marginBottom: 8 }}>Workspaces in this company</h2>
-              <p className="muted" style={{ fontSize: 13, marginBottom: 12 }}>
-                Workspaces are scoped to the active company in your session.
-              </p>
-              <Link href="/dashboard/workspaces" className="nav-link">Go to workspaces →</Link>
-            </div>
-          </>
-        )}
+    <Chrome
+      active="companies"
+      pageTitle={company?.name || "Company"}
+      user={{ userId: claims.userId, displayName: claims.displayName, handle: claims.email }}
+      activeCompany={claims.companyName ? { name: claims.companyName } : null}
+    >
+      <div className="breadcrumb">
+        <Link href="/dashboard">Dashboard</Link>
+        <span className="sep">›</span>
+        <Link href="/dashboard/companies">Companies</Link>
+        <span className="sep">›</span>
+        <span className="current">{company?.name || "—"}</span>
       </div>
-    </div>
+
+      {error && (
+        <div className="card" style={{ marginBottom: 24 }}>
+          <div style={{ color: "#b42318" }}>{error}</div>
+        </div>
+      )}
+
+      {company && (
+        <>
+          <div className="profile-card">
+            <div className="profile-avatar">{initials(company.name)}</div>
+            <div className="profile-info">
+              <div className="profile-name-row">
+                <h1>{company.name}</h1>
+                {isActive ? (
+                  <span className="pill green"><span className="dot" /> Active</span>
+                ) : (
+                  <span className="pill"><span className="dot" /> Available</span>
+                )}
+                <span className={`pill ${company.kind === "personal" ? "cyan" : "violet"}`}>
+                  {company.kind}
+                </span>
+              </div>
+              <div className="profile-handle">
+                <code>{company.companyId}</code>
+              </div>
+              <div className="profile-meta">
+                {company.slug && <span>slug: <strong>{company.slug}</strong></span>}
+                <span>tier: <strong>{company.tier || "—"}</strong></span>
+              </div>
+            </div>
+            <div className="profile-actions">
+              <button className="btn btn-ghost btn-sm" type="button" disabled>Edit</button>
+            </div>
+          </div>
+
+          <div className="kicker">Company details</div>
+          <div className="card">
+            <table className="kv-table">
+              <tbody>
+                <tr><th>Company ID</th><td><code>{company.companyId}</code></td></tr>
+                <tr><th>Slug</th><td>{company.slug || "—"}</td></tr>
+                <tr><th>Tier</th><td>{company.tier || "—"}</td></tr>
+                <tr><th>Owner User ID</th><td><code>{company.ownerUserId}</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="kicker">Attached members</div>
+          <AddMemberForm companyId={company.companyId} />
+
+          <div className="kicker">Workspaces in this company</div>
+          <div className="card">
+            <p className="muted" style={{ marginBottom: 12 }}>
+              Workspaces are scoped to the active company in your session.
+            </p>
+            <Link href="/dashboard/workspaces" className="btn btn-ghost btn-sm">
+              Go to workspaces →
+            </Link>
+          </div>
+        </>
+      )}
+    </Chrome>
   );
 }

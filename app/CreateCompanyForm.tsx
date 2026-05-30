@@ -16,7 +16,6 @@ export default function CreateCompanyForm() {
     setError(null);
     try {
       const res = await fetch("/dashboard/companies/api/create", {
-        // Shell rewrites this back to companies-fe /api/create
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ name, slug: slug || undefined }),
@@ -37,19 +36,24 @@ export default function CreateCompanyForm() {
 
   return (
     <div className="card">
-      <h2 style={{ marginBottom: 16 }}>Create a company</h2>
+      <div className="card-header">
+        <h2>Create a company</h2>
+        <p className="muted">Organizations are sovereign — each gets its own ID, members, and workspaces.</p>
+      </div>
       <form onSubmit={submit} className="stack">
-        <div>
-          <label className="label">Name</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} required placeholder="Acme, Inc." />
+        <div className="row-2">
+          <div className="field">
+            <label className="field-label">Name</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} required placeholder="Acme, Inc." />
+          </div>
+          <div className="field">
+            <label className="field-label">Slug (optional)</label>
+            <input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="acme" />
+          </div>
         </div>
-        <div>
-          <label className="label">Slug (optional)</label>
-          <input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="acme" />
-        </div>
-        {error && <div className="error">{error}</div>}
-        <div className="row">
-          <button type="submit" className="primary" disabled={busy || !name}>
+        {error && <div className="field-error">{error}</div>}
+        <div className="cluster">
+          <button type="submit" className="btn btn-primary" disabled={busy || !name}>
             {busy ? "Creating..." : "Create company"}
           </button>
         </div>
