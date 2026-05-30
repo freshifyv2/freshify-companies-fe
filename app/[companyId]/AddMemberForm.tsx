@@ -37,38 +37,47 @@ export default function AddMemberForm({ companyId }: { companyId: string }) {
   }
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <h2>Add a member</h2>
-        <p className="muted">Assign a user to this company with a role.</p>
+    <form onSubmit={submit}>
+      <div className="field-grid">
+        <div className="field">
+          <label className="field-label">USER ID</label>
+          <input
+            className="field-input"
+            value={userId}
+            onChange={(e) => setUserId(e.target.value)}
+            placeholder="usr_..."
+            required
+          />
+        </div>
+        <div className="field">
+          <label className="field-label">ROLE</label>
+          <select
+            className="field-input field-select"
+            value={role}
+            onChange={(e) => setRole(e.target.value as "admin" | "member")}
+          >
+            <option value="member">Member</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
       </div>
-      <form onSubmit={submit} className="stack">
-        <div className="row-2">
-          <div className="field">
-            <label className="field-label">User ID</label>
-            <input
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              placeholder="usr_..."
-              required
-            />
-          </div>
-          <div className="field">
-            <label className="field-label">Role</label>
-            <select value={role} onChange={(e) => setRole(e.target.value as "admin" | "member")}>
-              <option value="member">member</option>
-              <option value="admin">admin</option>
-            </select>
-          </div>
+      {error && (
+        <div className="warning-banner" style={{ marginTop: 16 }}>
+          <span className="warning-banner-icon" aria-hidden>⚠</span>
+          {error}
         </div>
-        {error && <div className="field-error">{error}</div>}
-        {success && <div className="field-success">{success}</div>}
-        <div className="cluster">
-          <button type="submit" className="btn btn-primary" disabled={busy || !userId}>
-            {busy ? "Adding..." : "Add member"}
-          </button>
+      )}
+      {success && (
+        <div className="warning-banner" style={{ marginTop: 16, background: "var(--green-soft)", color: "var(--green-text)" }}>
+          <span className="warning-banner-icon" aria-hidden>✓</span>
+          {success}
         </div>
-      </form>
-    </div>
+      )}
+      <div style={{ marginTop: 20 }}>
+        <button type="submit" className="btn btn-primary" disabled={busy || !userId}>
+          {busy ? "Adding..." : "Add Member"}
+        </button>
+      </div>
+    </form>
   );
 }

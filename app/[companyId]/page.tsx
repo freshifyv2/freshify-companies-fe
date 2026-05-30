@@ -7,6 +7,12 @@ import AddMemberForm from "./AddMemberForm";
 
 export const dynamic = "force-dynamic";
 
+function handleFromEmail(email?: string | null): string {
+  if (!email) return "user";
+  if (email.startsWith("+")) return email.replace(/[^0-9]/g, "");
+  return email.split("@")[0] || email;
+}
+
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return "?";
@@ -24,6 +30,10 @@ export default async function CompanyDetailPage({
   const claims = decodeClaims(token);
   if (!claims) redirect("/login");
 
+  const isOperator = Boolean(claims.operator);
+  const displayName = claims.displayName || claims.email || "User";
+  const handle = handleFromEmail(claims.email);
+
   let company: CompanyDetail | null = null;
   let error: string | null = null;
   try {
@@ -39,76 +49,103 @@ export default async function CompanyDetailPage({
   return (
     <Chrome
       active="companies"
-      pageTitle={company?.name || "Company"}
-      user={{ userId: claims.userId, displayName: claims.displayName, handle: claims.email }}
+      pageTitle="Company Detail"
+      user={{ userId: claims.userId, displayName, handle, isOperator }}
       activeCompany={claims.companyName ? { name: claims.companyName } : null}
     >
-      <div className="breadcrumb">
+      <div className="page-breadcrumb">
         <Link href="/dashboard">Dashboard</Link>
-        <span className="sep">›</span>
+        <span className="page-breadcrumb-sep">›</span>
         <Link href="/dashboard/companies">Companies</Link>
-        <span className="sep">›</span>
-        <span className="current">{company?.name || "—"}</span>
+        <span className="page-breadcrumb-sep">›</span>
+        <span className="page-breadcrumb-current">{company?.name || "—"}</span>
       </div>
 
       {error && (
-        <div className="card" style={{ marginBottom: 24 }}>
-          <div style={{ color: "#b42318" }}>{error}</div>
+        <div className="warning-banner" style={{ marginBottom: 16 }}>
+          <span className="warning-banner-icon" aria-hidden>⚠</span>
+          {error}
         </div>
       )}
 
       {company && (
         <>
-          <div className="profile-card">
-            <div className="profile-avatar">{initials(company.name)}</div>
-            <div className="profile-info">
-              <div className="profile-name-row">
-                <h1>{company.name}</h1>
-                {isActive ? (
-                  <span className="pill green"><span className="dot" /> Active</span>
-                ) : (
-                  <span className="pill"><span className="dot" /> Available</span>
-                )}
-                <span className={`pill ${company.kind === "personal" ? "cyan" : "violet"}`}>
-                  {company.kind}
+          {/* Hero card */}
+          <div className="hero-card">
+            <div className="hero-card-left">
+              <span className="avatar-circle is-lg" aria-hidden style={{ background: "var(--violet-soft)", color: "var(--violet)" }}>
+                {initials(company.name)}
+              </span>
+              <div className="hero-card-text">
+                <span className="status-pill is-active hero-card-status">
+                  {isActive ? "Active session" : "Available"}
                 </span>
-              </div>
-              <div className="profile-handle">
-                <code>{company.companyId}</code>
-              </div>
-              <div className="profile-meta">
-                {company.slug && <span>slug: <strong>{company.slug}</strong></span>}
-                <span>tier: <strong>{company.tier || "—"}</strong></span>
+                <h1 className="hero-card-title">{company.name}</h1>
+                <p className="hero-card-subtitle">
+                  {company.kind === "personal" ? "Personal company" : "Organization"} · {company.tier || "Standard"} tier
+                </p>
               </div>
             </div>
-            <div className="profile-actions">
-              <button className="btn btn-ghost btn-sm" type="button" disabled>Edit</button>
+            <div className="hero-card-actions">
+              <button type="button" className="btn btn-primary" disabled>
+                Update Company
+              </button>
             </div>
           </div>
 
-          <div className="kicker">Company details</div>
-          <div className="card">
-            <table className="kv-table">
-              <tbody>
-                <tr><th>Company ID</th><td><code>{company.companyId}</code></td></tr>
-                <tr><th>Slug</th><td>{company.slug || "—"}</td></tr>
-                <tr><th>Tier</th><td>{company.tier || "—"}</td></tr>
-                <tr><th>Owner User ID</th><td><code>{company.ownerUserId}</code></td></tr>
-              </tbody>
-            </table>
+          {/* Primary Information */}
+          <div className="section-card">
+            <div className="section-card-header">
+              <h3 className="section-card-title">Primary Information</h3>
+            </div>
+            <div className="field-grid">
+              <div className="field">
+                <label className="field-label">COMPANY ID</label>
+                <input className="field-input is-readonly" value={company.companyId} readOnly />
+              </div>
+              <div className="field">
+                <label className="field-label">SLUG</label>
+                <input className="field-input is-readonly" value={company.slug || "—"} readOnly />
+              </div>
+              <div className="field">
+                <label className="field-label">KIND</label>
+                <input className="field-input is-readonly" value={company.kind} readOnly />
+              </div>
+              <div className="field">
+                <label className="field-label">TIER</label>
+                <input className="field-input is-readonly" value={company.tier || "Standard"} readOnly />
+              </div>
+              <div className="field" style={{ gridColumn: "1 / -1" }}>
+                <label className="field-label">OWNER USER ID</label>
+                <input className="field-input is-readonly" value={company.ownerUserId} readOnly />
+              </div>
+            </div>
           </div>
 
-          <div className="kicker">Attached members</div>
-          <AddMemberForm companyId={company.companyId} />
+          {/* Members */}
+          <div className="section-card">
+            <div className="section-card-header">
+              <span className="section-card-icon" aria-hidden>◐</span>
+              <h3 className="section-card-title">Attached Members</h3>
+            </div>
+            <AddMemberForm companyId={company.companyId} />
+          </div>
 
-          <div className="kicker">Workspaces in this company</div>
-          <div className="card">
-            <p className="muted" style={{ marginBottom: 12 }}>
-              Workspaces are scoped to the active company in your session.
-            </p>
-            <Link href="/dashboard/workspaces" className="btn btn-ghost btn-sm">
-              Go to workspaces →
-            </Link>
+          {/* Workspaces */}
+          <div className="section-card">
+            <div className="section-card-header">
+              <span className="section-card-icon" aria-hidden>◉</span>
+              <h3 className="section-card-title">Workspaces</h3>
+            </div>
+            <div className="assignment-row">
+              <div className="assignment-row-info">
+                <h4 className="assignment-row-name">View all workspaces in this company</h4>
+                <span className="assignment-row-sub">Workspaces are scoped to the active company in your session.</span>
+              </div>
+              <Link href="/dashboard/workspaces" className="btn btn-secondary btn-sm">
+                Go to workspaces →
+              </Link>
+            </div>
           </div>
         </>
       )}
