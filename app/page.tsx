@@ -223,9 +223,9 @@ export default async function CompaniesIndex() {
               </table>
             </div>
             <div className="load-more">
-              <a href="#" className="load-more-link" onClick={(e) => e.preventDefault()}>
+              <span className="load-more-link" aria-disabled="true">
                 Load More →
-              </a>
+              </span>
             </div>
           </>
         )}
