@@ -3,6 +3,7 @@ import Link from "next/link";
 import { readSessionToken, decodeClaims } from "@/lib/session";
 import { get, type CompanyDetail } from "@/lib/api";
 import { Chrome } from "@/lib/Chrome";
+import { loadChromeContext } from "@/lib/chromeContext";
 import AddMemberForm from "./AddMemberForm";
 
 export const dynamic = "force-dynamic";
