@@ -2594,3 +2594,63 @@ button {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
 }
+
+/* ─── UCM Stage 5 additions ────────────────────────────────────────────── */
+
+.page-header-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.btn-link {
+  background: transparent;
+  border: none;
+  color: var(--violet);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+}
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+/* Company Details quadrant on UCM02 */
+.quadrant-grid {
+  grid-template-columns: 1fr 1fr;
+}
+.quadrant-cell {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.quadrant-title {
+  margin: 0 0 4px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.quadrant-line {
+  margin: 0;
+  font-size: 14px;
+  color: var(--fg);
+  line-height: 1.4;
+}
+.quadrant-line.is-muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (max-width: 760px) {
+  .quadrant-grid {
+    grid-template-columns: 1fr;
+  }
+}

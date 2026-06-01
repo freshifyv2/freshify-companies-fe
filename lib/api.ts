@@ -5,6 +5,14 @@ const COMPANIES_URL =
   process.env.COMPANIES_SERVICE_URL ||
   "https://freshify-companies-sbzaekoo4q-uc.a.run.app";
 
+export const USERS_URL =
+  process.env.USERS_SERVICE_URL ||
+  "https://freshify-users-sbzaekoo4q-uc.a.run.app";
+
+export const WORKSPACES_URL =
+  process.env.WORKSPACES_SERVICE_URL ||
+  "https://freshify-workspaces-sbzaekoo4q-uc.a.run.app";
+
 async function authed(
   path: string,
   token: string,
@@ -39,13 +47,27 @@ export async function patch<T>(path: string, token: string, body: unknown): Prom
   return res.json() as Promise<T>;
 }
 
+/** Generic GET to a sibling sovereign module BE. */
+export async function getServiceJson<T>(
+  baseUrl: string,
+  path: string,
+  token: string,
+): Promise<T> {
+  const res = await fetch(`${baseUrl}${path}`, {
+    headers: { authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`${baseUrl}${path} ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<T>;
+}
+
 // ─── Types (mirror BE schemas) ────────────────────────────────────────────
 export interface CompanyListItem {
   companyId: string;
   name: string;
   slug: string | null;
   tier: string | null;
-  role: "admin" | "member";
+  role: "admin" | "member" | "operator";
   kind: "personal" | "organization";
 }
 export interface CompanyDetail {
@@ -55,4 +77,15 @@ export interface CompanyDetail {
   tier: string | null;
   kind: "personal" | "organization";
   ownerUserId: string;
+}
+export interface AdminCompanyListItem {
+  companyId: string;
+  name: string;
+  slug: string | null;
+  tier: string | null;
+  kind: "personal" | "organization";
+  ownerUserId: string;
+  status: "active" | "inactive" | "draft";
+  memberCount: number;
+  createdAt: string;
 }

@@ -1,10 +1,24 @@
+/**
+ * UCM01 — Customers list.
+ *
+ * Operators see ALL companies cross-tenant (via /v1/admin/companies).
+ * Non-operators see only their own (/v1/companies, role-scoped).
+ *
+ * Layout follows the RAS Customers screen: 4 metric cards + filter bar
+ * (All / Active / Inactive / Draft pills + search + filter button) + table
+ * with ID / Customer / Type / Creator / Created / Status / Users columns +
+ * Export + "+ New Customer" CTA.
+ */
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { readSessionToken, decodeClaims } from "@/lib/session";
-import { get, type CompanyListItem } from "@/lib/api";
+import {
+  get,
+  type CompanyListItem,
+  type AdminCompanyListItem,
+} from "@/lib/api";
 import { Chrome } from "@/lib/Chrome";
 import { loadChromeContext } from "@/lib/chromeContext";
-import CreateCompanyForm from "./CreateCompanyForm";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +36,6 @@ function initials(name: string): string {
 }
 
 function shortId(id: string): string {
-  // cmp_lxOvblVD_DYzK1Tu → C-LXOV
   const cleaned = id.replace(/^cmp_/, "").replace(/[^A-Za-z0-9]/g, "");
   return `#C-${cleaned.slice(0, 4).toUpperCase()}`;
 }
@@ -31,7 +44,22 @@ function formatDate(d?: string | Date | null): string {
   if (!d) return "—";
   const date = typeof d === "string" ? new Date(d) : d;
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+interface RowVM {
+  companyId: string;
+  name: string;
+  kind: "personal" | "organization";
+  tier: string | null;
+  status: "active" | "inactive" | "draft";
+  memberCount: number;
+  createdAt?: string;
+  ownerUserId?: string;
 }
 
 export default async function CompaniesIndex() {
@@ -40,48 +68,105 @@ export default async function CompaniesIndex() {
   const claims = decodeClaims(token);
   if (!claims) redirect("/login");
 
+  const ctx = await loadChromeContext();
   const isOperator = Boolean(claims.operator);
   const displayName = claims.displayName || claims.email || "User";
   const handle = handleFromEmail(claims.email);
 
-  let companies: CompanyListItem[] = [];
+  let rows: RowVM[] = [];
   let error: string | null = null;
-  try {
-    const out = await get<{ companies: CompanyListItem[] }>("/v1/companies", token);
-    companies = out.companies;
-  } catch (e) {
-    error = (e as Error).message;
+
+  if (isOperator) {
+    try {
+      const out = await get<{ companies: AdminCompanyListItem[] }>(
+        "/v1/admin/companies",
+        token,
+      );
+      rows = out.companies.map((c) => ({
+        companyId: c.companyId,
+        name: c.name,
+        kind: c.kind,
+        tier: c.tier,
+        status: c.status,
+        memberCount: c.memberCount,
+        createdAt: c.createdAt,
+        ownerUserId: c.ownerUserId,
+      }));
+    } catch (e) {
+      error = (e as Error).message;
+    }
+  } else {
+    try {
+      const out = await get<{ companies: CompanyListItem[] }>(
+        "/v1/companies",
+        token,
+      );
+      rows = out.companies.map((c) => ({
+        companyId: c.companyId,
+        name: c.name,
+        kind: c.kind,
+        tier: c.tier,
+        status: c.kind === "personal" ? "draft" : "active",
+        memberCount: 0,
+      }));
+    } catch (e) {
+      error = (e as Error).message;
+    }
   }
 
-  const total = companies.length;
-  const active = companies.filter((c) => c.companyId === claims.companyId).length || total;
-  const inactive = 0;
-  const draft = 0;
+  const total = rows.length;
+  const active = rows.filter((r) => r.status === "active").length;
+  const inactive = rows.filter((r) => r.status === "inactive").length;
+  const draft = rows.filter((r) => r.status === "draft").length;
+  const newThisMonth = rows.filter((r) => {
+    if (!r.createdAt) return false;
+    const d = new Date(r.createdAt);
+    if (Number.isNaN(d.getTime())) return false;
+    const now = new Date();
+    return (
+      d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+    );
+  }).length;
+  const activeRate = total ? Math.round((active / total) * 100) : 0;
+
+  // Creator name lookup — for the rows table we just show "RAS Admin" for
+  // the operator-owned default tenant and the truncated owner id otherwise.
+  function creatorLabel(ownerUserId?: string): string {
+    if (!ownerUserId) return "System";
+    if (ownerUserId === claims!.userId) return displayName;
+    return `User · ${ownerUserId.replace(/^usr_/, "").slice(0, 6)}`;
+  }
 
   return (
     <Chrome
       active="companies"
-      pageTitle="Companies"
+      pageTitle="Customers"
       user={{ userId: claims.userId, displayName, handle, isOperator }}
-      activeCompany={claims.companyName ? { name: claims.companyName } : null}
+      activeCompany={ctx?.activeCompany ?? null}
+      tenantOptions={ctx?.tenantOptions ?? []}
     >
       <div className="page-breadcrumb">
         <Link href="/dashboard">Dashboard</Link>
         <span className="page-breadcrumb-sep">›</span>
-        <span className="page-breadcrumb-current">Companies</span>
+        <span className="page-breadcrumb-current">Customers</span>
       </div>
 
       <div className="page-header">
         <div>
           <h1 className="page-header-title">Overview</h1>
+          <p className="page-header-sub">
+            {isOperator
+              ? "Customer directory across every tenant."
+              : "Your active customer relationships."}
+          </p>
         </div>
         <div className="page-header-actions">
           <button type="button" className="btn btn-secondary">
             <span aria-hidden>⬆</span> Export
           </button>
-          <a href="#create-company" className="btn btn-primary">
-            + New Company
-          </a>
+          <Link href="/dashboard/companies/new" className="btn btn-primary">
+            + New Customer
+          </Link>
         </div>
       </div>
 
@@ -92,22 +177,24 @@ export default async function CompaniesIndex() {
         </div>
       )}
 
-      {/* RAS-style metric cards */}
+      {/* RAS metric cards */}
       <div className="metrics-row">
         <div className="metric-card">
           <div className="metric-card-top">
             <span className="metric-card-icon" aria-hidden>◇</span>
-            <span className="metric-card-badge">+{total} TOTAL</span>
+            <span className="metric-card-badge">
+              +{newThisMonth} THIS MONTH
+            </span>
           </div>
           <div className="metric-card-body">
-            <p className="metric-card-label">Total Companies</p>
+            <p className="metric-card-label">Total Customers</p>
             <p className="metric-card-value">{total}</p>
           </div>
         </div>
         <div className="metric-card">
           <div className="metric-card-top">
             <span className="metric-card-icon is-green" aria-hidden>✓</span>
-            <span className="metric-card-badge">{total > 0 ? Math.round((active / total) * 100) : 0}% ACTIVE</span>
+            <span className="metric-card-badge">{activeRate}% ACTIVE RATE</span>
           </div>
           <div className="metric-card-body">
             <p className="metric-card-label">Active</p>
@@ -117,7 +204,7 @@ export default async function CompaniesIndex() {
         <div className="metric-card">
           <div className="metric-card-top">
             <span className="metric-card-icon is-amber" aria-hidden>⊘</span>
-            <span className="metric-card-badge is-amber">PENDING</span>
+            <span className="metric-card-badge is-amber">DORMANT</span>
           </div>
           <div className="metric-card-body">
             <p className="metric-card-label">Inactive</p>
@@ -136,104 +223,128 @@ export default async function CompaniesIndex() {
         </div>
       </div>
 
-      {/* RAS table card with filter bar */}
       <div className="list-card">
         <div className="filter-bar">
           <div className="filter-pills">
-            <button type="button" className="filter-pill is-active">All</button>
-            <button type="button" className="filter-pill">Active</button>
-            <button type="button" className="filter-pill">Inactive</button>
-            <button type="button" className="filter-pill">Draft</button>
+            <button type="button" className="filter-pill is-active">
+              All ({total})
+            </button>
+            <button type="button" className="filter-pill">
+              Active ({active})
+            </button>
+            <button type="button" className="filter-pill">
+              Inactive ({inactive})
+            </button>
+            <button type="button" className="filter-pill">
+              Draft ({draft})
+            </button>
           </div>
           <div className="search-input-wrap">
             <span className="search-input-icon" aria-hidden>⌕</span>
             <input
               className="search-input"
-              placeholder="search for name, title, company, location, active date, expire, date, draft date..."
+              placeholder="search for name, type, creator, created date..."
               disabled
             />
           </div>
-          <button type="button" className="filter-button" aria-label="Filter">⚙</button>
+          <button type="button" className="filter-button" aria-label="Filter">
+            ⚙
+          </button>
         </div>
 
-        {companies.length === 0 ? (
+        {rows.length === 0 ? (
           <div className="list-card-empty">
-            <p style={{ margin: "24px 0 8px", fontWeight: 600, color: "var(--fg)" }}>No companies yet</p>
-            <p style={{ margin: 0 }}>Create your first company below to get started.</p>
+            <p style={{ margin: "24px 0 8px", fontWeight: 600, color: "var(--fg)" }}>
+              No customers yet
+            </p>
+            <p style={{ margin: 0 }}>
+              Click <strong>+ New Customer</strong> to add the first one.
+            </p>
           </div>
         ) : (
-          <>
-            <div className="data-table-wrap">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Company</th>
-                    <th>Type</th>
-                    <th>Your Role</th>
-                    <th>Workspaces</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {companies.map((c) => {
-                    const isActive = c.companyId === claims.companyId;
-                    const typePillCls = c.kind === "personal" ? "is-pink" : "is-violet";
-                    const typeLabel = c.kind === "personal" ? "Personal" : "Organization";
-                    return (
-                      <tr key={c.companyId} className="is-clickable">
-                        <td className="data-table-id">{shortId(c.companyId)}</td>
-                        <td>
-                          <div className="user-cell">
-                            <span className="avatar-circle">{initials(c.name)}</span>
-                            <div className="user-cell-text">
-                              <Link
-                                href={`/dashboard/companies/${c.companyId}`}
-                                className="user-cell-name"
-                                style={{ color: "var(--fg)", textDecoration: "none" }}
-                              >
-                                {c.name}
-                              </Link>
-                              <div className="user-cell-handle">{c.tier || "Standard"}</div>
+          <div className="data-table-wrap">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Customer</th>
+                  <th>Type</th>
+                  <th>Creator</th>
+                  <th>Created</th>
+                  <th>Status</th>
+                  <th>Users</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => {
+                  const typePillCls =
+                    r.kind === "personal" ? "is-pink" : "is-violet";
+                  const typeLabel =
+                    r.kind === "personal" ? "Personal" : "Enterprise";
+                  const statusCls =
+                    r.status === "active"
+                      ? "is-active"
+                      : r.status === "inactive"
+                        ? "is-inactive"
+                        : "is-pending";
+                  return (
+                    <tr key={r.companyId} className="is-clickable">
+                      <td className="data-table-id">{shortId(r.companyId)}</td>
+                      <td>
+                        <div className="user-cell">
+                          <span className="avatar-circle">{initials(r.name)}</span>
+                          <div className="user-cell-text">
+                            <Link
+                              href={`/dashboard/companies/${r.companyId}`}
+                              className="user-cell-name"
+                            >
+                              {r.name}
+                            </Link>
+                            <div className="user-cell-handle">
+                              {r.tier || "Standard"}
                             </div>
                           </div>
-                        </td>
-                        <td>
-                          <span className={`pill ${typePillCls}`}>{typeLabel}</span>
-                        </td>
-                        <td>
-                          <span className="pill is-gray">{c.role}</span>
-                        </td>
-                        <td>
-                          <span className="tag-cell">
-                            <span className="tag-chip">workspaces</span>
-                            <span className="tag-chip-overflow">view</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`pill ${typePillCls}`}>{typeLabel}</span>
+                      </td>
+                      <td>
+                        <div className="user-cell">
+                          <span className="avatar-circle">
+                            {initials(creatorLabel(r.ownerUserId))}
                           </span>
-                        </td>
-                        <td>
-                          {isActive ? (
-                            <span className="status-pill is-active">Active</span>
-                          ) : (
-                            <span className="status-pill is-active">Active</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <div className="load-more">
-              <span className="load-more-link" aria-disabled="true">
-                Load More →
-              </span>
-            </div>
-          </>
+                          <span className="user-cell-name">
+                            {creatorLabel(r.ownerUserId)}
+                          </span>
+                        </div>
+                      </td>
+                      <td>{formatDate(r.createdAt)}</td>
+                      <td>
+                        <span className={`status-pill ${statusCls}`}>
+                          {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="tag-cell">
+                          <span className="tag-chip">
+                            👥 {r.memberCount}
+                          </span>
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
-      </div>
 
-      <div id="create-company" style={{ marginTop: 32 }}>
-        <CreateCompanyForm />
+        <div className="load-more">
+          <span className="load-more-link" aria-disabled="true">
+            Load More →
+          </span>
+        </div>
       </div>
     </Chrome>
   );
