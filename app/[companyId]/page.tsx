@@ -179,6 +179,14 @@ export default async function CompanyDetailPage({
               </div>
             </div>
             <div className="hero-card-actions">
+              {isOperator && (
+                <Link
+                  href={`/dashboard/companies/${company.companyId}/roles`}
+                  className="btn btn-secondary"
+                >
+                  Roles
+                </Link>
+              )}
               <button type="button" className="btn btn-secondary" disabled>
                 Deactivate
               </button>
