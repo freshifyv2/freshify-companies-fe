@@ -9,6 +9,7 @@ import Link from "next/link";
 import { readSessionToken, decodeClaims } from "@/lib/session";
 import { get, type CompanyDetail } from "@/lib/api";
 import { Chrome } from "@/lib/Chrome";
+import { OperatorOnly403 } from "@/lib/OperatorOnly";
 import { loadChromeContext } from "@/lib/chromeContext";
 import EditCompanyForm from "./EditCompanyForm";
 
@@ -44,7 +45,22 @@ export default async function CompanyEditPage({
 
   const isOperator = Boolean(claims.operator);
   if (!isOperator) {
-    redirect(`/dashboard/companies/${params.companyId}`);
+    return (
+      <OperatorOnly403
+        active="companies"
+        pageTitle="Edit Customer"
+        user={{
+          userId: claims.userId,
+          displayName: claims.displayName || claims.email || "User",
+          handle: (claims.email || "").startsWith("+")
+            ? (claims.email || "").replace(/[^0-9]/g, "")
+            : (claims.email || "").split("@")[0] || "user",
+          isOperator: false,
+        }}
+        activeCompany={claims.companyName ? { name: claims.companyName } : null}
+        detail="Editing customers"
+      />
+    );
   }
 
   const ctx = await loadChromeContext();

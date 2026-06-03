@@ -14,6 +14,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { readSessionToken, decodeClaims } from "@/lib/session";
 import { Chrome } from "@/lib/Chrome";
+import { OperatorOnly403 } from "@/lib/OperatorOnly";
 import { loadChromeContext } from "@/lib/chromeContext";
 import CreateCustomerForm from "./CreateCustomerForm";
 
@@ -32,7 +33,24 @@ export default async function NewCustomerPage() {
   if (!claims) redirect("/login");
 
   const isOperator = Boolean(claims.operator);
-  if (!isOperator) redirect("/dashboard/companies");
+  if (!isOperator) {
+    return (
+      <OperatorOnly403
+        active="companies"
+        pageTitle="New Customer"
+        user={{
+          userId: claims.userId,
+          displayName: claims.displayName || claims.email || "User",
+          handle: (claims.email || "").startsWith("+")
+            ? (claims.email || "").replace(/[^0-9]/g, "")
+            : (claims.email || "").split("@")[0] || "user",
+          isOperator: false,
+        }}
+        activeCompany={claims.companyName ? { name: claims.companyName } : null}
+        detail="Creating customers"
+      />
+    );
+  }
 
   const ctx = await loadChromeContext();
   const displayName = claims.displayName || claims.email || "User";
