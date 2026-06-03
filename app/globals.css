@@ -45,19 +45,23 @@
   --violet-soft-2: rgba(108, 71, 255, 0.16);
   --violet-tint: #f3f0ff;
   --violet-text: #4a2bd9;
-  --cyan: #00b4d8;
-  --cyan-soft: rgba(0, 180, 216, 0.1);
+  /* Beige accent — warm neutral, replaces amber/yellow */
+  --beige: #b8a784;
+  --beige-soft: #f5efe1;
+  --beige-text: #6b5a3a;
 
-  /* Status colors (RAS-style, kept identical for semantic clarity) */
-  --green: #16a34a;
-  --green-soft: #dcfce7;
-  --green-text: #15803d;
-  --amber: #f59e0b;
-  --amber-soft: #fef3c7;
-  --amber-text: #b45309;
-  --red: #ef4444;
-  --red-soft: #fee2e2;
-  --red-text: #b91c1c;
+  /* Status colors remapped to the approved palette (white/purple/grey/beige) */
+  --green: var(--violet);
+  --green-soft: var(--violet-tint);
+  --green-text: var(--violet-text);
+  --amber: var(--beige);
+  --amber-soft: var(--beige-soft);
+  --amber-text: var(--beige-text);
+  --red: #3f3f46;
+  --red-soft: #f4f4f5;
+  --red-text: #18181b;
+  --cyan: var(--violet);
+  --cyan-soft: var(--violet-soft);
   --gray-soft: #f4f4f5;
   --gray-text: #52525b;
 
@@ -133,12 +137,23 @@
   --violet-soft-2: rgba(138, 107, 255, 0.24);
   --violet-tint: rgba(138, 107, 255, 0.12);
   --violet-text: #b094ff;
-  --cyan: #38c2e8;
-  --cyan-soft: rgba(56, 194, 232, 0.16);
-
-  /* Beige accent for warmer surfaces in dark mode */
+  /* Beige (warm neutral) */
   --beige: #d4c5a9;
-  --beige-soft: rgba(212, 197, 169, 0.12);
+  --beige-soft: rgba(212, 197, 169, 0.10);
+  --beige-text: #d4c5a9;
+
+  /* Status remap (dark) */
+  --green: var(--violet);
+  --green-soft: var(--violet-tint);
+  --green-text: var(--violet-text);
+  --amber: var(--beige);
+  --amber-soft: var(--beige-soft);
+  --amber-text: var(--beige-text);
+  --red: #d4d4d8;
+  --red-soft: rgba(255, 255, 255, 0.06);
+  --red-text: #f4f4f5;
+  --cyan: var(--violet);
+  --cyan-soft: var(--violet-soft);
 
   color-scheme: dark;
 }
