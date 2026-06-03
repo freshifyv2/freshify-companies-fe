@@ -20,6 +20,7 @@
  */
 
 import type { ReactNode } from "react";
+import { ThemeToggle } from "./ThemeToggle";
 
 export type ActiveSection =
   | "dashboard"
@@ -405,6 +406,7 @@ export function Chrome({
             )}
           </div>
           <div className="topbar-actions">
+            <ThemeToggle />
             <button type="button" className="topbar-bell" aria-label="Notifications">
               {IconBell}
               <span className="topbar-bell-dot" aria-hidden />

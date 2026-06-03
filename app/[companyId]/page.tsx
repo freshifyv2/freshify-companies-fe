@@ -181,10 +181,10 @@ export default async function CompanyDetailPage({
             <div className="hero-card-actions">
               {isOperator && (
                 <Link
-                  href={`/dashboard/companies/${company.companyId}/roles`}
+                  href={`/dashboard/companies/${company.companyId}/module-settings`}
                   className="btn btn-secondary"
                 >
-                  Roles
+                  <span aria-hidden>⚙</span> Module Settings
                 </Link>
               )}
               <button type="button" className="btn btn-secondary" disabled>
@@ -194,7 +194,7 @@ export default async function CompanyDetailPage({
                 href={`/dashboard/companies/${company.companyId}/edit`}
                 className="btn btn-primary"
               >
-                Edit Company
+                Edit Customer
               </Link>
             </div>
           </div>
