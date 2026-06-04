@@ -175,7 +175,7 @@ export default async function CompanyModuleSettingsPage({
   return (
     <Chrome
       active="companies"
-      pageTitle="Module Settings"
+      pageTitle="Customer Settings"
       user={{ userId: claims.userId, displayName, handle, isOperator }}
       activeCompany={ctx?.activeCompany ?? null}
       tenantOptions={ctx?.tenantOptions ?? []}
@@ -191,7 +191,7 @@ export default async function CompanyModuleSettingsPage({
             <span className="page-breadcrumb-sep">›</span>
           </>
         )}
-        <span className="page-breadcrumb-current">Module Settings</span>
+        <span className="page-breadcrumb-current">Settings</span>
       </div>
 
       {error && (
@@ -207,11 +207,11 @@ export default async function CompanyModuleSettingsPage({
             <div className="hero-card-text">
               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
                 <span className="data-table-id">{shortId(company.companyId)}</span>
-                <span className="pill is-violet">Module Settings</span>
+                <span className="pill is-violet">Settings</span>
               </div>
               <h1 className="hero-card-title">{company.name}</h1>
               <p className="hero-card-subtitle">
-                Roles and registry for this customer's Customer module configuration. Both sections are operator-only.
+                Per-customer roles and membership registry. Operator-only.
               </p>
             </div>
           </div>

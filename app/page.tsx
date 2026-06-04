@@ -209,6 +209,9 @@ export default async function CompaniesIndex({
           </p>
         </div>
         <div className="page-header-actions">
+          <Link href="/dashboard/companies/settings" className="btn btn-secondary">
+            <span aria-hidden>⚙</span> Module Settings
+          </Link>
           <button type="button" className="btn btn-secondary">
             <span aria-hidden>⬆</span> Export
           </button>

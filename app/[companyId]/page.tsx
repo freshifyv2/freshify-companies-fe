@@ -184,7 +184,7 @@ export default async function CompanyDetailPage({
                   href={`/dashboard/companies/${company.companyId}/module-settings`}
                   className="btn btn-secondary"
                 >
-                  <span aria-hidden>⚙</span> Module Settings
+                  <span aria-hidden>⚙</span> Settings
                 </Link>
               )}
               <button type="button" className="btn btn-secondary" disabled>
