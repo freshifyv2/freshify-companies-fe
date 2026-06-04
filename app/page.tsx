@@ -62,7 +62,28 @@ interface RowVM {
   ownerUserId?: string;
 }
 
-export default async function CompaniesIndex() {
+// Deploy 5.16 — status filter + search are now wired via URL searchParams
+// (?status=active&q=acme). All filtering is done server-side so the page
+// stays a Server Component. Pills use <Link> + search uses a GET form.
+type StatusFilter = "all" | "active" | "inactive" | "draft";
+function parseStatusFilter(v: string | string[] | undefined): StatusFilter {
+  const s = Array.isArray(v) ? v[0] : v;
+  if (s === "active" || s === "inactive" || s === "draft") return s;
+  return "all";
+}
+function parseQuery(v: string | string[] | undefined): string {
+  const s = Array.isArray(v) ? v[0] : v;
+  return (s ?? "").trim().slice(0, 80);
+}
+
+export default async function CompaniesIndex({
+  searchParams,
+}: {
+  searchParams?: Promise<{ status?: string; q?: string }>;
+}) {
+  const sp = (await searchParams) ?? {};
+  const statusFilter = parseStatusFilter(sp.status);
+  const query = parseQuery(sp.q);
   const token = readSessionToken();
   if (!token) redirect("/login");
   const claims = decodeClaims(token);
@@ -118,6 +139,33 @@ export default async function CompaniesIndex() {
   const active = rows.filter((r) => r.status === "active").length;
   const inactive = rows.filter((r) => r.status === "inactive").length;
   const draft = rows.filter((r) => r.status === "draft").length;
+
+  // Deploy 5.16 — apply status pill + search filter to the visible rows.
+  // Counts above stay anchored to the *full* dataset so the pills always
+  // show the true totals.
+  const qLower = query.toLowerCase();
+  const visibleRows = rows.filter((r) => {
+    if (statusFilter !== "all" && r.status !== statusFilter) return false;
+    if (!qLower) return true;
+    const hay = [
+      r.name,
+      r.companyId,
+      r.tier ?? "",
+      r.kind,
+      r.status,
+      r.ownerUserId ?? "",
+    ]
+      .join(" ")
+      .toLowerCase();
+    return hay.includes(qLower);
+  });
+  const buildHref = (status: StatusFilter) => {
+    const params = new URLSearchParams();
+    if (status !== "all") params.set("status", status);
+    if (query) params.set("q", query);
+    const qs = params.toString();
+    return qs ? `/dashboard/companies?${qs}` : "/dashboard/companies";
+  };
   const newThisMonth = rows.filter((r) => {
     if (!r.createdAt) return false;
     const d = new Date(r.createdAt);
@@ -226,30 +274,53 @@ export default async function CompaniesIndex() {
       <div className="list-card">
         <div className="filter-bar">
           <div className="filter-pills">
-            <button type="button" className="filter-pill is-active">
+            <Link
+              href={buildHref("all")}
+              className={`filter-pill ${statusFilter === "all" ? "is-active" : ""}`}
+            >
               All ({total})
-            </button>
-            <button type="button" className="filter-pill">
+            </Link>
+            <Link
+              href={buildHref("active")}
+              className={`filter-pill ${statusFilter === "active" ? "is-active" : ""}`}
+            >
               Active ({active})
-            </button>
-            <button type="button" className="filter-pill">
+            </Link>
+            <Link
+              href={buildHref("inactive")}
+              className={`filter-pill ${statusFilter === "inactive" ? "is-active" : ""}`}
+            >
               Inactive ({inactive})
-            </button>
-            <button type="button" className="filter-pill">
+            </Link>
+            <Link
+              href={buildHref("draft")}
+              className={`filter-pill ${statusFilter === "draft" ? "is-active" : ""}`}
+            >
               Draft ({draft})
-            </button>
+            </Link>
           </div>
-          <div className="search-input-wrap">
+          <form method="GET" action="/dashboard/companies" className="search-input-wrap">
+            {statusFilter !== "all" && (
+              <input type="hidden" name="status" value={statusFilter} />
+            )}
             <span className="search-input-icon" aria-hidden>⌕</span>
             <input
               className="search-input"
-              placeholder="search for name, type, creator, created date..."
-              disabled
+              name="q"
+              defaultValue={query}
+              placeholder="Search by name, tier, status, owner…"
+              autoComplete="off"
             />
-          </div>
-          <button type="button" className="filter-button" aria-label="Filter">
-            ⚙
-          </button>
+            {query && (
+              <Link
+                href={buildHref(statusFilter)}
+                className="search-input-clear"
+                aria-label="Clear search"
+              >
+                ×
+              </Link>
+            )}
+          </form>
         </div>
 
         {rows.length === 0 ? (
@@ -259,6 +330,16 @@ export default async function CompaniesIndex() {
             </p>
             <p style={{ margin: 0 }}>
               Click <strong>+ New Customer</strong> to add the first one.
+            </p>
+          </div>
+        ) : visibleRows.length === 0 ? (
+          <div className="list-card-empty">
+            <p style={{ margin: "24px 0 8px", fontWeight: 600, color: "var(--fg)" }}>
+              No customers match these filters
+            </p>
+            <p style={{ margin: 0 }}>
+              Try a different filter or{" "}
+              <Link href="/dashboard/companies">clear filters</Link>.
             </p>
           </div>
         ) : (
@@ -276,7 +357,7 @@ export default async function CompaniesIndex() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r) => {
+                {visibleRows.map((r) => {
                   const typePillCls =
                     r.kind === "personal" ? "is-pink" : "is-violet";
                   const typeLabel =
