@@ -28,6 +28,9 @@ export type ActiveSection =
   | "workspaces"
   | "users"
   | "account"
+  | "portal-settings"
+  | "audit"
+  | "invites"
   | "projects"
   | "tasks"
   | "reports"
@@ -166,13 +169,27 @@ const IconShield = (
     <path d="M9 12l2 2 4-4" />
   </svg>
 );
+const IconActivity = (
+  <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>
+    <path d="M3 12h4l3-8 4 16 3-8h4" />
+  </svg>
+);
+const IconEnvelope = (
+  <svg viewBox="0 0 24 24" width="18" height="18" {...stroke}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="M3 7l9 6 9-6" />
+  </svg>
+);
 
 const NAV_ITEMS: NavItem[] = [
   { key: "dashboard", label: "Dashboard", href: "/dashboard", icon: IconDashboard },
   { key: "companies", label: "Companies", href: "/dashboard/companies", icon: IconCompanies },
   { key: "workspaces", label: "Workspaces", href: "/dashboard/workspaces", icon: IconWorkspaces },
   { key: "users", label: "Users", href: "/dashboard/users/list", icon: IconUsers, operatorOnly: true },
-  { key: "account", label: "Account", href: "/dashboard/users/account", icon: IconAccount },
+  { key: "portal-settings", label: "Portal Settings", href: "/dashboard/portal-settings", icon: IconShield, operatorOnly: true },
+  { key: "audit", label: "Audit Log", href: "/dashboard/audit", icon: IconActivity, operatorOnly: true },
+  { key: "invites", label: "Invites", href: "/dashboard/invites", icon: IconEnvelope, operatorOnly: true },
+  // (Account moved from sidebar to the topbar user pulldown in Deploy 5.15)
   // Service modules — guide-only, separated by divider
   { key: "projects", label: "Projects", href: "/dashboard/projects", icon: IconProjects, guideOnly: true, groupStart: "Service Modules" },
   { key: "tasks", label: "Tasks", href: "/dashboard/tasks", icon: IconTasks, guideOnly: true },
@@ -411,14 +428,35 @@ export function Chrome({
               {IconBell}
               <span className="topbar-bell-dot" aria-hidden />
             </button>
-            <a
-              href="/dashboard/users/account"
-              className={`topbar-user ${active === "account" ? "is-active" : ""}`}
-              aria-label="Account"
-            >
-              <span className="topbar-avatar" aria-hidden>{initials(user.displayName)}</span>
-              <span className="topbar-user-name">{user.displayName ?? "Signed in"}</span>
-            </a>
+            <details className="topbar-user-menu">
+              <summary
+                className={`topbar-user ${active === "account" ? "is-active" : ""}`}
+                aria-label="Account menu"
+              >
+                <span className="topbar-avatar" aria-hidden>{initials(user.displayName)}</span>
+                <span className="topbar-user-name">{user.displayName ?? "Signed in"}</span>
+                <span className="topbar-user-chevron" aria-hidden>{IconChevron}</span>
+              </summary>
+              <div className="topbar-user-dropdown" role="menu">
+                <a
+                  href="/dashboard/users/account"
+                  className="topbar-user-dropdown-item"
+                  role="menuitem"
+                >
+                  <span className="topbar-user-dropdown-icon" aria-hidden>{IconAccount}</span>
+                  <span>Account</span>
+                </a>
+                <label
+                  htmlFor="logout-modal"
+                  className="topbar-user-dropdown-item"
+                  role="menuitem"
+                  style={{ cursor: "pointer" }}
+                >
+                  <span className="topbar-user-dropdown-icon" aria-hidden>{IconLogout}</span>
+                  <span>Log out</span>
+                </label>
+              </div>
+            </details>
           </div>
         </header>
 
