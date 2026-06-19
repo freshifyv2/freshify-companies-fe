@@ -18,7 +18,7 @@ The default UI label is "Customers" — `companies` is the canonical module key,
 
 ```bash
 npm install
-cp .env.example .env  # set COMPANIES_BASE_URL, PORTAL_SHELL_URL
+cp .env.example .env  # set USERS_SERVICE_URL, COMPANIES_SERVICE_URL, WORKSPACES_SERVICE_URL
 npm run dev
 ```
 
@@ -28,9 +28,10 @@ Defaults to `http://localhost:3002`.
 
 | Variable | Required | Notes |
 |---|---|---|
-| `COMPANIES_BASE_URL` | yes | `freshify-companies` backend URL |
-| `PORTAL_SHELL_URL` | yes | Used to redirect unauthenticated traffic to the shell's login |
-| `USER_JWT_SECRET` | yes | HS256 verification secret for user sessions |
+| `USERS_SERVICE_URL` | yes | `freshify-users` backend URL |
+| `COMPANIES_SERVICE_URL` | yes | `freshify-companies` backend URL |
+| `WORKSPACES_SERVICE_URL` | yes | `freshify-workspaces` backend URL |
+| `SESSION_COOKIE_NAME` | no | Defaults to `sp_session` |
 | `PORT` | no | Defaults to `3002` |
 
 ## Stack
