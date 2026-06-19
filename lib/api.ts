@@ -47,6 +47,54 @@ export async function patch<T>(path: string, token: string, body: unknown): Prom
   return res.json() as Promise<T>;
 }
 
+export async function put<T>(path: string, token: string, body: unknown): Promise<T> {
+  const res = await authed(path, token, { method: "PUT", body: JSON.stringify(body) });
+  if (!res.ok) throw new Error(`companies ${path} ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<T>;
+}
+
+export async function del<T>(path: string, token: string): Promise<T> {
+  const res = await authed(path, token, { method: "DELETE" });
+  if (!res.ok) throw new Error(`companies ${path} ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<T>;
+}
+
+// ─── Sprint 4 — Module Registry Settings (Phase B) ────────────────────────
+export interface ModuleSettingsView {
+  moduleKey: string;
+  tenantScope: "portal" | "company" | "workspace";
+  tenantId: string;
+  availableRoleKeys: string[];
+  defaultRoleKey: string;
+  version: number;
+  updatedAt: string;
+  updatedBy: string | null;
+}
+
+export interface ModuleAdminView {
+  moduleKey: string;
+  tenantScope: "portal" | "company" | "workspace";
+  tenantId: string;
+  userId: string;
+  grantedAt: string;
+  grantedBy: string | null;
+  source: "bootstrap" | "manual";
+}
+
+export interface ModuleInfoView {
+  moduleId: string;
+  backendService: string;
+  frontendService: string;
+  collections: string[];
+  routePrefix: string;
+  authOwnership: { owns: boolean; note: string };
+  settingsOwnership: { owner: string; note: string };
+  settingsUrl: string;
+  smiVersion: string;
+  availableRoleKeys: string[];
+  roleLabels: Record<string, string>;
+}
+
 /** Generic GET to a sibling sovereign module BE. */
 export async function getServiceJson<T>(
   baseUrl: string,
