@@ -375,31 +375,6 @@ button {
   background: var(--surface-hover);
 }
 
-/* Theme toggle — same circular size/shape as the bell for visual rhythm */
-.topbar-theme-toggle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: transparent;
-  border: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--fg-2);
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.topbar-theme-toggle:hover {
-  background: var(--surface-hover);
-  color: var(--violet);
-}
-
-.topbar-theme-toggle:focus-visible {
-  outline: 2px solid var(--violet);
-  outline-offset: 2px;
-}
-
 .topbar-bell-dot {
   position: absolute;
   top: 8px;
