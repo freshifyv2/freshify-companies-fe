@@ -78,11 +78,25 @@ export interface CompanyDetail {
   kind: "personal" | "organization";
   ownerUserId: string;
 }
+// Sprint 2 / 2.1a — closed CompanyType enum mirrored from the backend.
+// Source of truth lives at freshify-companies/src/types/companyType.ts.
+export const COMPANY_TYPES = [
+  "Enterprise",
+  "Client",
+  "Sub-Contractor",
+  "Partner",
+  "Affiliate",
+] as const;
+export type CompanyType = (typeof COMPANY_TYPES)[number];
+
 export interface AdminCompanyListItem {
   companyId: string;
   name: string;
   slug: string | null;
   tier: string | null;
+  // Sprint 2 / 2.2 — surfaces CompanyType so the list can render type chips
+  // and the FE can drive the ?type= filter pills.
+  type: CompanyType | null;
   kind: "personal" | "organization";
   ownerUserId: string;
   status: "active" | "inactive" | "draft";

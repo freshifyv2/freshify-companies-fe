@@ -16,6 +16,8 @@ import {
   get,
   type CompanyListItem,
   type AdminCompanyListItem,
+  COMPANY_TYPES,
+  type CompanyType,
 } from "@/lib/api";
 import { Chrome } from "@/lib/Chrome";
 import { loadChromeContext } from "@/lib/chromeContext";
@@ -56,6 +58,7 @@ interface RowVM {
   name: string;
   kind: "personal" | "organization";
   tier: string | null;
+  type: CompanyType | null;
   status: "active" | "inactive" | "draft";
   memberCount: number;
   createdAt?: string;
@@ -75,15 +78,25 @@ function parseQuery(v: string | string[] | undefined): string {
   const s = Array.isArray(v) ? v[0] : v;
   return (s ?? "").trim().slice(0, 80);
 }
+// Sprint 2 / 2.5 — type filter pills. "all" means no ?type= sent to the BE.
+type TypeFilter = CompanyType | "all";
+function parseTypeFilter(v: string | string[] | undefined): TypeFilter {
+  const s = Array.isArray(v) ? v[0] : v;
+  if (s && (COMPANY_TYPES as readonly string[]).includes(s)) {
+    return s as CompanyType;
+  }
+  return "all";
+}
 
 export default async function CompaniesIndex({
   searchParams,
 }: {
-  searchParams?: Promise<{ status?: string; q?: string }>;
+  searchParams?: Promise<{ status?: string; q?: string; type?: string }>;
 }) {
   const sp = (await searchParams) ?? {};
   const statusFilter = parseStatusFilter(sp.status);
   const query = parseQuery(sp.q);
+  const typeFilter = parseTypeFilter(sp.type);
   const token = readSessionToken();
   if (!token) redirect("/login");
   const claims = decodeClaims(token);
@@ -99,15 +112,19 @@ export default async function CompaniesIndex({
 
   if (isOperator) {
     try {
-      const out = await get<{ companies: AdminCompanyListItem[] }>(
-        "/v1/admin/companies",
-        token,
-      );
+      // Sprint 2 / 2.5 — server-side type filter: pass ?type= to the BE when
+      // a specific type is selected. "all" returns the full directory.
+      const path =
+        typeFilter === "all"
+          ? "/v1/admin/companies"
+          : `/v1/admin/companies?type=${encodeURIComponent(typeFilter)}`;
+      const out = await get<{ companies: AdminCompanyListItem[] }>(path, token);
       rows = out.companies.map((c) => ({
         companyId: c.companyId,
         name: c.name,
         kind: c.kind,
         tier: c.tier,
+        type: c.type ?? null,
         status: c.status,
         memberCount: c.memberCount,
         createdAt: c.createdAt,
@@ -127,6 +144,7 @@ export default async function CompaniesIndex({
         name: c.name,
         kind: c.kind,
         tier: c.tier,
+        type: null,
         status: c.kind === "personal" ? "draft" : "active",
         memberCount: 0,
       }));
@@ -159,9 +177,20 @@ export default async function CompaniesIndex({
       .toLowerCase();
     return hay.includes(qLower);
   });
-  const buildHref = (status: StatusFilter) => {
+  const buildHref = (status: StatusFilter, type: TypeFilter = typeFilter) => {
     const params = new URLSearchParams();
     if (status !== "all") params.set("status", status);
+    if (type !== "all") params.set("type", type);
+    if (query) params.set("q", query);
+    const qs = params.toString();
+    return qs ? `/dashboard/companies?${qs}` : "/dashboard/companies";
+  };
+  // Sprint 2 / 2.5 — build href for a Type pill click. Preserves the
+  // currently-active status pill and search query.
+  const buildTypeHref = (type: TypeFilter) => {
+    const params = new URLSearchParams();
+    if (statusFilter !== "all") params.set("status", statusFilter);
+    if (type !== "all") params.set("type", type);
     if (query) params.set("q", query);
     const qs = params.toString();
     return qs ? `/dashboard/companies?${qs}` : "/dashboard/companies";
@@ -306,6 +335,9 @@ export default async function CompaniesIndex({
             {statusFilter !== "all" && (
               <input type="hidden" name="status" value={statusFilter} />
             )}
+            {typeFilter !== "all" && (
+              <input type="hidden" name="type" value={typeFilter} />
+            )}
             <span className="search-input-icon" aria-hidden>⌕</span>
             <input
               className="search-input"
@@ -325,6 +357,29 @@ export default async function CompaniesIndex({
             )}
           </form>
         </div>
+
+        {/* Sprint 2 / 2.5 — type filter pills. Server-side ?type= filter. */}
+        {isOperator && (
+          <div className="filter-bar" style={{ paddingTop: 0 }}>
+            <div className="filter-pills">
+              <Link
+                href={buildTypeHref("all")}
+                className={`filter-pill ${typeFilter === "all" ? "is-active" : ""}`}
+              >
+                All Types
+              </Link>
+              {COMPANY_TYPES.map((t) => (
+                <Link
+                  key={t}
+                  href={buildTypeHref(t)}
+                  className={`filter-pill ${typeFilter === t ? "is-active" : ""}`}
+                >
+                  {t}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {rows.length === 0 ? (
           <div className="list-card-empty">
@@ -361,10 +416,11 @@ export default async function CompaniesIndex({
               </thead>
               <tbody>
                 {visibleRows.map((r) => {
+                  // Sprint 2 / 2.5 — prefer the persisted CompanyType when
+                  // present; fall back to kind-derived label for legacy rows.
                   const typePillCls =
                     r.kind === "personal" ? "is-pink" : "is-violet";
-                  const typeLabel =
-                    r.kind === "personal" ? "Personal" : "Enterprise";
+                  const typeLabel = r.type ?? (r.kind === "personal" ? "Personal" : "Enterprise");
                   const statusCls =
                     r.status === "active"
                       ? "is-active"
