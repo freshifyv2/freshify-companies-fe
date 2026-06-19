@@ -1,12 +1,12 @@
 /**
  * UCM02 — Customer detail.
  *
- * Sections (full RAS Figma minus out-of-scope blocks):
+ * Sections (sovereign portal reference design):
  *   - Hero card (Active pill + #C-xxx + subtype + name + Deactivate / Edit)
  *   - Attached Users & Roles (table — KEEP)
- *   - Company Details (quadrant: Address / Communication / Creation / RAS Rep)
+ *   - Company Details (quadrant: Address / Communication / Creation / Account Rep)
  *
- * OUT OF SCOPE (deferred to later RAS work):
+ * OUT OF SCOPE (deferred to later iterations):
  *   - Attached Locations, Latest Orders, Payable/Receivable Pricing Sets,
  *     Performance report banner.
  */
@@ -303,7 +303,7 @@ export default async function CompanyDetailPage({
                 <h4 className="quadrant-title">Address</h4>
                 <p className="quadrant-line">{company.name}</p>
                 <p className="quadrant-line is-muted">
-                  Address on file — RAS Hub
+                  Address on file
                 </p>
               </div>
               {/* Communication */}
@@ -322,9 +322,9 @@ export default async function CompanyDetailPage({
                 </p>
                 <p className="quadrant-line is-muted">Standard tier</p>
               </div>
-              {/* RAS Representative */}
+              {/* Account Representative */}
               <div className="quadrant-cell">
-                <h4 className="quadrant-title">RAS Representative</h4>
+                <h4 className="quadrant-title">Account Representative</h4>
                 <div
                   className="user-cell"
                   style={{ marginTop: 4 }}

@@ -68,7 +68,7 @@ export default function CreateCustomerForm({ creator }: Props) {
         submit(false);
       }}
     >
-      {/* Top action row matches RAS layout */}
+      {/* Top action row */}
       <div
         className="page-header"
         style={{ marginBottom: 16, paddingBottom: 0 }}
@@ -188,7 +188,7 @@ export default function CreateCustomerForm({ creator }: Props) {
             />
           </div>
           <div className="field" style={{ gridColumn: "1 / -1" }}>
-            <label className="field-label">RAS REPRESENTATIVE</label>
+            <label className="field-label">ACCOUNT REPRESENTATIVE</label>
             <input
               className="field-input"
               value={rep}

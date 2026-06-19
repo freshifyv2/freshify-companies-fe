@@ -1,11 +1,11 @@
 /* ============================================================
    Sovereign Portal — Freshify design system v3
    ============================================================
-   Visual language: RAS Logistics screens, with Freshify violet
-   replacing RAS red. Dark navy sidebar, white topbar, light
+   Visual language: sovereign portal reference design
+   with black/white/grey palette. Dark navy sidebar, white topbar, light
    surface content. Geist Sans (display + body).
 
-   Components rebuilt against RAS Figma reference:
+   Components:
    - Dark sidebar with brand mark + dropdown switcher
    - White topbar with bell + circular avatar pill
    - Metric cards: icon-chip LEFT, badge TOP-RIGHT, big number BOTTOM
@@ -38,7 +38,7 @@
   --sidebar-hover: rgba(255, 255, 255, 0.06);
   --sidebar-line: rgba(255, 255, 255, 0.08);
 
-  /* Freshify accents (replaces RAS red) */
+  /* Accent colors */
   --violet: #6c47ff;
   --violet-2: #5a37e0;
   --violet-soft: rgba(108, 71, 255, 0.08);
@@ -237,7 +237,7 @@ button {
 }
 
 /* ============================================================
-   SIDEBAR (dark navy, RAS pattern)
+   SIDEBAR (dark navy)
    ============================================================ */
 
 .sidebar {
@@ -778,7 +778,7 @@ button {
 }
 
 /* ============================================================
-   METRIC CARDS — RAS pattern
+   METRIC CARDS
    icon-chip LEFT, badge TOP-RIGHT, label, BIG NUMBER BOTTOM
    ============================================================ */
 
@@ -1196,7 +1196,7 @@ button {
 }
 
 /* ============================================================
-   COMPACT TAG CHIPS (for "RAS Logistics Inc +1" pattern)
+   COMPACT TAG CHIPS (for "Northwind Logistics +1" pattern)
    ============================================================ */
 
 .tag-chip {

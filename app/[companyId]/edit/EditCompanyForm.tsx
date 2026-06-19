@@ -151,7 +151,7 @@ export default function EditCompanyForm({
             />
           </div>
           <div className="field">
-            <label className="field-label">RAS REPRESENTATIVE</label>
+            <label className="field-label">ACCOUNT REPRESENTATIVE</label>
             <input
               className="field-input is-readonly"
               value={operatorName}

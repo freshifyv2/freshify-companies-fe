@@ -3,7 +3,7 @@
  *
  * Operator-only. Three in-scope sections:
  *   - System Generated (Identifier preview, Creator, Creator Email — read-only)
- *   - Customer Details (Name, Email, Phone, Address, RAS Representative)
+ *   - Customer Details (Name, Email, Phone, Address, Account Representative)
  *   - Attach Users (post-create stub — added after the customer record exists)
  *
  * OUT OF SCOPE (deferred):

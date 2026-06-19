@@ -4,7 +4,7 @@
  * Operators see ALL companies cross-tenant (via /v1/admin/companies).
  * Non-operators see only their own (/v1/companies, role-scoped).
  *
- * Layout follows the RAS Customers screen: 4 metric cards + filter bar
+ * Layout: sovereign portal customers screen: 4 metric cards + filter bar
  * (All / Active / Inactive / Draft pills + search + filter button) + table
  * with ID / Customer / Type / Creator / Created / Status / Users columns +
  * Export + "+ New Customer" CTA.
@@ -177,7 +177,7 @@ export default async function CompaniesIndex({
   }).length;
   const activeRate = total ? Math.round((active / total) * 100) : 0;
 
-  // Creator name lookup — for the rows table we just show "RAS Admin" for
+  // Creator name lookup — for the rows table we just show "Operator" for
   // the operator-owned default tenant and the truncated owner id otherwise.
   function creatorLabel(ownerUserId?: string): string {
     if (!ownerUserId) return "System";
@@ -228,7 +228,7 @@ export default async function CompaniesIndex({
         </div>
       )}
 
-      {/* RAS metric cards */}
+      {/* Metric cards */}
       <div className="metrics-row">
         <div className="metric-card">
           <div className="metric-card-top">
