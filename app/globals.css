@@ -1,9 +1,11 @@
 /* ============================================================
-   Sovereign Portal — Freshify design system v3
-   ============================================================
-   Visual language: sovereign portal reference design
-   with black/white/grey palette. Dark navy sidebar, white topbar, light
-   surface content. Geist Sans (display + body).
+   Sovereign Portal — public-release theme.
+   Black / white / grey only. No violet.
+
+   Visual language: dark sidebar, white topbar, light surface
+   content. Geist Sans (display + body). All accent variables
+   (--violet*, --beige*, status colors) remap to neutral
+   black/grey so brand color is fully neutral for OSS release.
 
    Components:
    - Dark sidebar with brand mark + dropdown switcher
@@ -11,8 +13,8 @@
    - Metric cards: icon-chip LEFT, badge TOP-RIGHT, big number BOTTOM
    - List cards: white card with header (title + View All link)
    - Tables: uppercase muted column headers, status dot pills
-   - Avatar stacks with +N violet overflow chip
-   - Hero card pattern + PROFILE/SETTINGS tabs (violet underline)
+   - Avatar stacks with neutral overflow chip
+   - Hero card pattern + PROFILE/SETTINGS tabs (neutral underline)
    ============================================================ */
 
 @import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap");
@@ -38,45 +40,44 @@
   --sidebar-hover: rgba(255, 255, 255, 0.06);
   --sidebar-line: rgba(255, 255, 255, 0.08);
 
-  /* Accent colors */
-  --violet: #6c47ff;
-  --violet-2: #5a37e0;
-  --violet-soft: rgba(108, 71, 255, 0.08);
-  --violet-soft-2: rgba(108, 71, 255, 0.14);
-  --violet-tint: #f3f0ff;
-  --violet-text: #4a2bd9;
+  /* Neutral accents — all variable names retained for compatibility
+     with existing selectors, all values remapped to black/white/grey. */
+  --violet: #0f0f0f;
+  --violet-2: #18181b;
+  --violet-soft: #f4f4f5;
+  --violet-soft-2: #e4e4e7;
+  --violet-tint: #f4f4f5;
+  --violet-text: #0f0f0f;
 
-  /* Beige accent — warm neutral, replaces amber/yellow in light mode */
-  --beige: #b8a784;
-  --beige-soft: #f5efe1;
-  --beige-text: #6b5a3a;
+  /* Warm neutral — used for warning surfaces. Kept as a desaturated grey. */
+  --beige: #71717a;
+  --beige-soft: #f4f4f5;
+  --beige-text: #3f3f46;
 
-  /* Status colors remapped into the approved palette
-     (white / purple / grey / beige). All status tones derive from violet,
-     beige, or neutral grey — no green/amber/red/cyan hues. */
-  --green: var(--violet);              /* positive → violet */
-  --green-soft: var(--violet-tint);
-  --green-text: var(--violet-text);
-  --amber: var(--beige);                /* warning → beige */
-  --amber-soft: var(--beige-soft);
-  --amber-text: var(--beige-text);
-  --red: #3f3f46;                       /* danger → deep neutral grey */
+  /* Status colors — all neutral greys. No green/amber/red/cyan hues. */
+  --green: #0f0f0f;
+  --green-soft: #f4f4f5;
+  --green-text: #0f0f0f;
+  --amber: #71717a;
+  --amber-soft: #f4f4f5;
+  --amber-text: #3f3f46;
+  --red: #3f3f46;
   --red-soft: #f4f4f5;
   --red-text: #18181b;
-  --cyan: var(--violet);                /* info → violet */
-  --cyan-soft: var(--violet-soft);
+  --cyan: #0f0f0f;
+  --cyan-soft: #f4f4f5;
   --gray-soft: #f4f4f5;
   --gray-text: #52525b;
 
-  /* Pill / badge backgrounds — all in palette */
-  --pill-violet-bg: #f3f0ff;
-  --pill-violet-fg: #4a2bd9;
-  --pill-pink-bg: var(--violet-tint);   /* alias retained, mapped to violet */
-  --pill-pink-fg: var(--violet-text);
-  --pill-amber-bg: var(--beige-soft);
-  --pill-amber-fg: var(--beige-text);
-  --pill-green-bg: var(--violet-tint);
-  --pill-green-fg: var(--violet-text);
+  /* Pill / badge backgrounds — neutral greys only */
+  --pill-violet-bg: #f4f4f5;
+  --pill-violet-fg: #0f0f0f;
+  --pill-pink-bg: #f4f4f5;
+  --pill-pink-fg: #3f3f46;
+  --pill-amber-bg: #f4f4f5;
+  --pill-amber-fg: #3f3f46;
+  --pill-green-bg: #f4f4f5;
+  --pill-green-fg: #0f0f0f;
 
   /* Radii */
   --radius-sm: 6px;
@@ -97,93 +98,6 @@
   /* Layout */
   --sidebar-width: 232px;
   --topbar-height: 72px;
-}
-
-/* ============================================================
-   DARK MODE OVERLAY — Portal v3 Deploy 4
-   ============================================================
-   Applied via [data-theme="dark"] on <html>. ThemeProvider in
-   the layout reads the cookie/localStorage preference and sets
-   this attribute before first paint to avoid flash.
-
-   Restricted palette discipline (per design rules): black,
-   purple, grey, beige only. NO red/green/yellow/amber even in
-   dark mode — status pills use neutral greys/violet variants.
-   ============================================================ */
-
-[data-theme="dark"] {
-  /* Light surface palette inverts: dark canvas, slightly lighter cards */
-  --bg: #0a0a0f;
-  --surface: #15151c;
-  --surface-2: #1c1c25;
-  --surface-hover: #1f1f29;
-  --line: #2a2a35;
-  --line-strong: #3a3a48;
-  --fg: #e8e8ec;
-  --fg-2: #d4d4d8;
-  --muted: #a1a1aa;
-  --muted-2: #71717a;
-
-  /* Sidebar stays dark (already dark in light mode) but slightly deeper to
-     differentiate from content surfaces */
-  --sidebar-bg: #08080c;
-  --sidebar-bg-2: #12121a;
-  --sidebar-text: #e4e4e7;
-  --sidebar-text-muted: #a1a1aa;
-  --sidebar-hover: rgba(255, 255, 255, 0.08);
-  --sidebar-line: rgba(255, 255, 255, 0.06);
-
-  /* Violet accents shift slightly brighter for dark backgrounds */
-  --violet: #8a6bff;
-  --violet-2: #6c47ff;
-  --violet-soft: rgba(138, 107, 255, 0.14);
-  --violet-soft-2: rgba(138, 107, 255, 0.22);
-  --violet-tint: rgba(138, 107, 255, 0.10);
-  --violet-text: #b094ff;
-
-  /* Beige accent — warm neutral against deep backgrounds */
-  --beige: #d4c5a9;
-  --beige-soft: rgba(212, 197, 169, 0.10);
-  --beige-text: #d4c5a9;
-
-  /* Status remap — same scheme as light mode, dark surfaces */
-  --green: var(--violet);
-  --green-soft: var(--violet-tint);
-  --green-text: var(--violet-text);
-  --amber: var(--beige);
-  --amber-soft: var(--beige-soft);
-  --amber-text: var(--beige-text);
-  --red: #d4d4d8;                       /* danger → light neutral against dark */
-  --red-soft: rgba(255, 255, 255, 0.06);
-  --red-text: #f4f4f5;
-  --cyan: var(--violet);
-  --cyan-soft: var(--violet-soft);
-
-  /* Pill remap for dark */
-  --pill-violet-bg: rgba(138, 107, 255, 0.16);
-  --pill-violet-fg: #c4b3ff;
-  --pill-pink-bg: rgba(138, 107, 255, 0.16);
-  --pill-pink-fg: #c4b3ff;
-  --pill-amber-bg: rgba(212, 197, 169, 0.12);
-  --pill-amber-fg: #d4c5a9;
-  --pill-green-bg: rgba(138, 107, 255, 0.16);
-  --pill-green-fg: #c4b3ff;
-
-  color-scheme: dark;
-}
-
-/* Smooth theme transitions on the major surfaces. Keep narrow — don't
-   transition every property or interactions feel mushy. */
-html,
-body,
-.shell,
-.sidebar,
-.topbar,
-.content,
-.card,
-.metric-card,
-.list-card {
-  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
 }
 
 * {
@@ -2940,9 +2854,9 @@ button {
   gap: 4px;
   padding: 2px 6px;
   border-radius: 999px;
-  background: rgba(108, 71, 255, 0.18);
-  color: #c9b9ff;
-  border: 1px solid rgba(108, 71, 255, 0.45);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.30);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -2988,12 +2902,12 @@ button {
 }
 
 .sidebar-switcher-item.is-active .sidebar-switcher-item-dot {
-  background: var(--violet, #6c47ff);
-  box-shadow: 0 0 0 3px rgba(108, 71, 255, 0.2);
+  background: var(--violet);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18);
 }
 
 .sidebar-switcher-item-dot.is-aggregate {
-  background: #00d4ff;
+  background: #a1a1aa;
 }
 
 .sidebar-switcher-item-hint {
@@ -3043,9 +2957,9 @@ button {
   gap: 6px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(108, 71, 255, 0.10);
-  color: #5b3ce6;
-  border: 1px solid rgba(108, 71, 255, 0.30);
+  background: #f4f4f5;
+  color: #0f0f0f;
+  border: 1px solid #e4e4e7;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.04em;
