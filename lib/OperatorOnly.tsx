@@ -5,7 +5,7 @@
  * a clear 403 view instead of being silently redirected to /dashboard.
  * Matches the pattern established in portal-shell /dashboard/portal-settings.
  */
-import { Chrome } from "@/lib/Chrome";
+import { Chrome } from "@freshifyv2/portal-shell-ui";
 
 interface Props {
   active: "users" | "companies" | "workspaces" | "dashboard";

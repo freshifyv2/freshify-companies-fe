@@ -8,9 +8,9 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { readSessionToken, decodeClaims } from "@/lib/session";
 import { get, type CompanyDetail } from "@/lib/api";
-import { Chrome } from "@/lib/Chrome";
+import { Chrome } from "@freshifyv2/portal-shell-ui";
 import { OperatorOnly403 } from "@/lib/OperatorOnly";
-import { loadChromeContext } from "@/lib/chromeContext";
+import { loadChromeContext } from "@freshifyv2/portal-shell-ui";
 import EditCompanyForm from "./EditCompanyForm";
 
 export const dynamic = "force-dynamic";

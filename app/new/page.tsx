@@ -13,9 +13,9 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { readSessionToken, decodeClaims } from "@/lib/session";
-import { Chrome } from "@/lib/Chrome";
+import { Chrome } from "@freshifyv2/portal-shell-ui";
 import { OperatorOnly403 } from "@/lib/OperatorOnly";
-import { loadChromeContext } from "@/lib/chromeContext";
+import { loadChromeContext } from "@freshifyv2/portal-shell-ui";
 import CreateCustomerForm from "./CreateCustomerForm";
 
 export const dynamic = "force-dynamic";
