@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { COMPANY_TYPES, type CompanyType } from "@/lib/api";
 
 interface Props {
   companyId: string;
@@ -10,6 +11,7 @@ interface Props {
     slug: string | null;
     tier: string | null;
     kind: "personal" | "organization";
+    type: CompanyType | null;
   };
   operatorName: string;
 }
@@ -23,6 +25,7 @@ export default function EditCompanyForm({
   const [name, setName] = useState(initial.name);
   const [slug, setSlug] = useState(initial.slug ?? "");
   const [tier, setTier] = useState(initial.tier ?? "");
+  const [type, setType] = useState<CompanyType | "">(initial.type ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -39,6 +42,8 @@ export default function EditCompanyForm({
       if (normSlug !== initial.slug) body.slug = normSlug;
       const normTier = tier.trim() || null;
       if (normTier !== initial.tier) body.tier = normTier;
+      const normType: CompanyType | null = type || null;
+      if (normType !== initial.type) body.type = normType;
 
       if (Object.keys(body).length === 0) {
         setSuccess("Nothing to save.");
@@ -130,6 +135,24 @@ export default function EditCompanyForm({
               onChange={(e) => setTier(e.target.value)}
               placeholder="Standard"
             />
+          </div>
+          <div className="field">
+            <label className="field-label">TYPE</label>
+            <select
+              className="field-input field-select"
+              value={type}
+              onChange={(e) => setType(e.target.value as CompanyType | "")}
+            >
+              <option value="">Unspecified</option>
+              {COMPANY_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+            <span className="field-hint">
+              Drives the type filter on the customers list.
+            </span>
           </div>
           <div className="field">
             <label className="field-label">KIND</label>

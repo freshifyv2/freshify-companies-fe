@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { COMPANY_TYPES, type CompanyType } from "@/lib/api";
 
 interface Props {
   creator: { name: string; email: string };
@@ -18,6 +19,7 @@ function slugify(s: string): string {
 export default function CreateCustomerForm({ creator }: Props) {
   const router = useRouter();
   const [name, setName] = useState("");
+  const [type, setType] = useState<CompanyType | "">("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -38,6 +40,7 @@ export default function CreateCustomerForm({ creator }: Props) {
         name,
       };
       if (slugPreview) body.slug = slugPreview;
+      if (type) body.type = type;
       const res = await fetch("/dashboard/companies/api/create", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -155,6 +158,24 @@ export default function CreateCustomerForm({ creator }: Props) {
               required
               placeholder="Acme, Inc."
             />
+          </div>
+          <div className="field">
+            <label className="field-label">TYPE</label>
+            <select
+              className="field-input field-select"
+              value={type}
+              onChange={(e) => setType(e.target.value as CompanyType | "")}
+            >
+              <option value="">Unspecified</option>
+              {COMPANY_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+            <span className="field-hint">
+              Drives the type filter on the customers list. Editable later.
+            </span>
           </div>
           <div className="field">
             <label className="field-label">EMAIL</label>

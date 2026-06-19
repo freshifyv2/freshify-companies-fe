@@ -70,14 +70,6 @@ export interface CompanyListItem {
   role: "admin" | "member" | "operator";
   kind: "personal" | "organization";
 }
-export interface CompanyDetail {
-  companyId: string;
-  name: string;
-  slug: string | null;
-  tier: string | null;
-  kind: "personal" | "organization";
-  ownerUserId: string;
-}
 // Sprint 2 / 2.1a — closed CompanyType enum mirrored from the backend.
 // Source of truth lives at freshify-companies/src/types/companyType.ts.
 export const COMPANY_TYPES = [
@@ -88,6 +80,18 @@ export const COMPANY_TYPES = [
   "Affiliate",
 ] as const;
 export type CompanyType = (typeof COMPANY_TYPES)[number];
+
+export interface CompanyDetail {
+  companyId: string;
+  name: string;
+  slug: string | null;
+  tier: string | null;
+  kind: "personal" | "organization";
+  ownerUserId: string;
+  // Sprint 2 / 2.6 — type surfaced so the edit form can render the
+  // type selector with the current value pre-selected.
+  type: CompanyType | null;
+}
 
 export interface AdminCompanyListItem {
   companyId: string;

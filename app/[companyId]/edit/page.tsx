@@ -161,6 +161,7 @@ export default async function CompanyEditPage({
               slug: company.slug,
               tier: company.tier,
               kind: company.kind,
+              type: company.type ?? null,
             }}
             operatorName={displayName}
           />
