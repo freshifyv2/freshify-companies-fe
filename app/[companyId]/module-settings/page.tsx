@@ -115,7 +115,7 @@ export default async function CompanyModuleSettingsPage({
     return (
       <OperatorOnly403
         active="companies"
-        pageTitle="Customer — Module Settings"
+        pageTitle="Customer — Settings"
         user={{ userId: claims.userId, displayName, handle, isOperator: false }}
         activeCompany={ctx?.activeCompany ?? (claims.companyName ? { name: claims.companyName } : null)}
         detail="Customer module settings"
